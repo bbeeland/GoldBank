@@ -1,0 +1,12 @@
+name: GoldBank
+main: me.beeland.dunmoore.bank.GoldBank
+version: 1.0.0
+api-version: 1.13
+
+commands:
+  balance:
+    aliases:
+      - bal
+  withdraw:
+  deposit:
+  pay:

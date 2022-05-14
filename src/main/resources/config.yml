@@ -1,0 +1,24 @@
+Database:
+  Host: ""
+  Port: 3306
+  Name: ""
+  Username: ""
+  Password: ""
+
+Options:
+  Enable-PlaceholderAPI: true
+  Enable-RGB: true
+  Default-Balance: 500
+
+Lang:
+  Invalid-Sender: "You must be a player to execute this command."
+  No-Permission: "You do not have permission to perform that action!"
+  Invalid-Target: "That player was not found!"
+  Self-Balance: "Your balance is $%goldbank-balance%"
+  Target-Balance: "%target_name%'s balance is %target_balance%"
+  Invalid-Amount: "You must provide a valid integer to withdraw!"
+  Insufficient-Funds: "You do not have the required amount of money for this!"
+  Withdraw-Success: "You have withdrawn %amount%! - Now you're broke."
+  Deposit-Success: "You put money in the bank in the amount of %amount%!"
+  Pay-Success: "You paid %target% $%amount%"
+  Payed-Success: "You've been paid $%amount% by %source%!"

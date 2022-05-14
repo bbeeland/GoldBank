@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS dbank_balances(
+    `uuid` VARCHAR(36) PRIMARY KEY NOT NULL,
+    `name` VARCHAR(32) NOT NULL,
+    `balance` INTEGER NOT NULL DEFAULT 0
+    );
