@@ -35,7 +35,7 @@ public class BalanceCommand implements CommandExecutor {
                 return true;
             }
 
-            player.sendMessage(plugin.withPlaceholders(player, plugin.getMessage("Lang.Self-Balance")));
+            player.sendMessage(plugin.withPlaceholders(player, plugin.getMessage("Lang.Balance-Self")));
             return true;
         }
 
@@ -53,11 +53,10 @@ public class BalanceCommand implements CommandExecutor {
 
             Player target = Bukkit.getPlayer(args[0]);
 
-            String messageWithPlaceholders = plugin.getMessage("Lang.Target-Balance")
+            player.sendMessage(plugin.withPlaceholders(player, plugin.getMessage("Lang.Balance-Target")
                     .replace("%target_name%", target.getName())
-                    .replace("%target_balance%", "" + profileHandler.getByPlayer(target).getBalance());
+                    .replace("%target_balance%", "" + profileHandler.getByPlayer(target).getBalance())));
 
-            player.sendMessage(plugin.withPlaceholders(player, messageWithPlaceholders));
             return true;
         }
 

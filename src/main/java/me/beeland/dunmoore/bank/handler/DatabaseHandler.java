@@ -30,6 +30,10 @@ public class DatabaseHandler {
         return connection;
     }
 
+    public HikariDataSource getDataSource() {
+        return dataSource;
+    }
+
     public PreparedStatement prepareStatement(String statement) {
         try {
             return connection.prepareStatement(statement);

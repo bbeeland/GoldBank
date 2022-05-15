@@ -1,3 +1,28 @@
+#     __       __                  __                  __                        _______             __    __      __                                _______
+#    |  \     /  \                |  \                |  \                      |       \           |  \  |  \    |  \                              |       \
+#    | $$\   /  $$  ______    ____| $$  ______        | $$____   __    __       | $$$$$$$\  ______   \$$ _| $$_  _| $$_     ______   _______        | $$$$$$$\
+#    | $$$\ /  $$$ |      \  /      $$ /      \       | $$    \ |  \  |  \      | $$__/ $$ /      \ |  \|   $$ \|   $$ \   /      \ |       \       | $$__/ $$
+#    | $$$$\  $$$$  \$$$$$$\|  $$$$$$$|  $$$$$$\      | $$$$$$$\| $$  | $$      | $$    $$|  $$$$$$\| $$ \$$$$$$ \$$$$$$  |  $$$$$$\| $$$$$$$\      | $$    $$
+#    | $$\$$ $$ $$ /      $$| $$  | $$| $$    $$      | $$  | $$| $$  | $$      | $$$$$$$\| $$   \$$| $$  | $$ __ | $$ __ | $$  | $$| $$  | $$      | $$$$$$$\
+#    | $$ \$$$| $$|  $$$$$$$| $$__| $$| $$$$$$$$      | $$__/ $$| $$__/ $$      | $$__/ $$| $$      | $$  | $$|  \| $$|  \| $$__/ $$| $$  | $$      | $$__/ $$
+#    | $$  \$ | $$ \$$    $$ \$$    $$ \$$     \      | $$    $$ \$$    $$      | $$    $$| $$      | $$   \$$  $$ \$$  $$ \$$    $$| $$  | $$      | $$    $$
+#    \$$      \$$  \$$$$$$$  \$$$$$$$  \$$$$$$$       \$$$$$$$  _\$$$$$$$       \$$$$$$$  \$$       \$$    \$$$$   \$$$$   \$$$$$$  \$$   \$$       \$$$$$$$
+#                                                              |  \__| $$
+#                                                               \$$    $$
+#                                                                \$$$$$$
+#    ________                          _______                                                                                       ___
+#    |        \                        |       \                                                                                     |   \
+#    | $$$$$$$$______    ______        | $$$$$$$\ __    __  _______   ______ ____    ______    ______    ______    ______         __  \$$$\
+#    | $$__   /      \  /      \       | $$  | $$|  \  |  \|       \ |      \    \  /      \  /      \  /      \  /      \       |  \   \$$\
+#    | $$  \ |  $$$$$$\|  $$$$$$\      | $$  | $$| $$  | $$| $$$$$$$\| $$$$$$\$$$$\|  $$$$$$\|  $$$$$$\|  $$$$$$\|  $$$$$$\       \$$   | $$
+#    | $$$$$ | $$  | $$| $$   \$$      | $$  | $$| $$  | $$| $$  | $$| $$ | $$ | $$| $$  | $$| $$  | $$| $$   \$$| $$    $$       __    | $$
+#    | $$    | $$__/ $$| $$            | $$__/ $$| $$__/ $$| $$  | $$| $$ | $$ | $$| $$__/ $$| $$__/ $$| $$      | $$$$$$$$      |  \ _/  $$
+#    | $$     \$$    $$| $$            | $$    $$ \$$    $$| $$  | $$| $$ | $$ | $$ \$$    $$ \$$    $$| $$       \$$     \       \$$|   $$
+#    \$$      \$$$$$$  \$$             \$$$$$$$   \$$$$$$  \$$   \$$ \$$  \$$  \$$  \$$$$$$   \$$$$$$  \$$        \$$$$$$$           \$$$
+
+#
+# All database settings go here!
+#
 Database:
   Host: ""
   Port: 3306
@@ -5,20 +30,115 @@ Database:
   Username: ""
   Password: ""
 
+#
+# Options to enable/disable specific functionalities of the plugin.
+#
 Options:
+  # You must have PlaceholderAPI present on the server! Required for the balance placeholder.
   Enable-PlaceholderAPI: true
+  # If not needed for server colors, I suggest disabling for server performance.
   Enable-RGB: true
+  # Edit the default balance when players join your server.
   Default-Balance: 500
+  # The maximum amount a player can withdraw
+  Max-Withdrawl: 20000
+  # How many users to display for balance top
+  Balance-Top-Amount: 10
+
+  # BankNote Config
+  Bank-Note:
+    Material: "PAPER"
+    Max-Amount: 10000
+    Display-Name: "Bank Note []"
+    Lore:
+      - "Line one"
+      - "Line two %amount%"
 
 Lang:
+
+  # When there is an error executing something in the database
+  Database-Error: "A MySQL exception has been detected."
+
+  # When a command sender is not a player, and needs to be a player (balance, deposit, withdraw)
   Invalid-Sender: "You must be a player to execute this command."
+
+  # When the player does not have the appropriate permission.
   No-Permission: "You do not have permission to perform that action!"
+
+  # When trying to target a player, and the user is not found.
   Invalid-Target: "That player was not found!"
-  Self-Balance: "Your balance is $%goldbank-balance%"
-  Target-Balance: "%target_name%'s balance is %target_balance%"
+
+  # When checking your balance.
+  Balance-Self: "Your balance is $%goldbank-balance%"
+
+  # When checking the balance of another player.
+  Balance-Target: "%target_name%'s balance is %target_balance%"
+
+  # When the provided number is invalid, due to invalid chars or not a whole number.
   Invalid-Amount: "You must provide a valid integer to withdraw!"
+
+  # When a player attempts to perform an action with funds they do not have.
   Insufficient-Funds: "You do not have the required amount of money for this!"
+
+  # When a player successfully withdraws funds from their account.
   Withdraw-Success: "You have withdrawn %amount%! - Now you're broke."
+
+  # When a player successfully deposits funds to their account.
   Deposit-Success: "You put money in the bank in the amount of %amount%!"
+
+  # When you successfully send another player funds.
   Pay-Success: "You paid %target% $%amount%"
+
+  # When you receive a payment from another player.
   Payed-Success: "You've been paid $%amount% by %source%!"
+
+  # Proper usage of /goldbankadmin (/gba)
+  Admin-Usage: "Proper Usage: &c&l/gba <take/remove/set> <player> <amount>"
+
+  # Proper usage to reload the plugin
+  Reload-Usage: "Proper Usage -> /gba reload"
+
+  # When the plugin was reloaded using /gba reload
+  Plugin-Reloaded: "Config reloaded!"
+
+  # Sent when successfully adding to a players balance.
+  Admin-Give: "You've given %target% $%amount%"
+
+  # Sent to a player when an admin gives them money.
+  Money-Deposited: "%amount% has been deposited into your bank account!"
+
+  # Sent when successfully removing money from a players balance.
+  Admin-Take: "You've removed $%amount% from %target%'s balance."
+
+  # Sent to a player when an admin removes money from their account.
+  Money-Withdrawn: "%amount% has been removed from your account!"
+
+  # Sent when trying to remove funds your target doesn't have.
+  Admin-Insufficient-Funds: "%target% does not have enough money!"
+
+  # Sent when successfully setting a players balance.
+  Admin-Set: "You've set %target%'s balance to $%amount%"
+
+  # Sent to a player when their balance is set.
+  Money-Set: "&7&l> &fYour balance was set to %amount%"
+
+  # Proper usage of /banknote
+  Banknote-Usage: "Proper usage -> /banknote (amount)"
+
+  # Sent when max banknote amount is exceeded.
+  Banknote-Exceeded: "You may not create note for more than $xxx,xxx,xxx,xxx,xxx"
+
+  # Banknote Created
+  Banknote-Created: "You've created a banknote for $%amount%"
+
+  # Banknote Deposited
+  Banknote-Deposited: "You've deposited a banknote for $%amount%"
+
+  # Format for the individual lines on balancetop
+  Balance-Top-Line: "%player% - %amount%"
+
+  # Format for the entire balance top message
+  Balance-Top-Format:
+    - '---- [ BALANCE TOP ] ---'
+    - '%top_players%'
+    - '------------------------'

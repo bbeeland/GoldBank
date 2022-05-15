@@ -28,37 +28,94 @@ public class ProfileHandler {
 
     public void init() {
 
-        if(Bukkit.getOnlinePlayers().size() == 0) return;
+        if (Bukkit.getOnlinePlayers().size() == 0) return;
 
-        for(Player player : Bukkit.getOnlinePlayers()) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
             loadProfile(player.getUniqueId());
         }
 
     }
 
     public void save() {
-        getProfiles().forEach(profile -> saveProfile(profile));
+
+        getProfiles().forEach(profile -> {
+
+            saveProfile(profile);
+        });
     }
 
     public EconomyProfile getByPlayer(Player player) {
         return getByUUID(player.getUniqueId());
     }
 
+    public EconomyProfile getByName(String name) {
+
+        for (EconomyProfile profile : profiles) {
+            if (profile.getPlayerName().equals(name)) return profile;
+        }
+
+        return loadProfile(name);
+    }
+
     public EconomyProfile getByUUID(UUID uuid) {
 
-        for(EconomyProfile profile : profiles) {
-            if(profile.getOwner().toString().equalsIgnoreCase(uuid.toString())) return profile;
+        for (EconomyProfile profile : profiles) {
+            if (profile.getOwner().toString().equalsIgnoreCase(uuid.toString())) return profile;
         }
 
         throw new IllegalArgumentException("Given UUID is not a loaded profile!");
+    }
+
+    public EconomyProfile loadProfile(String name) {
+
+        EconomyProfile loaded = null;
+
+        try {
+
+            PreparedStatement statement = plugin.getDatabaseHandler().prepareStatement("SELECT uuid,name,balance FROM dbank_balances WHERE name=?");
+
+            statement.setString(1, name);
+            ResultSet set = statement.executeQuery();
+
+            // If user has account
+            if (set.next()) {
+
+                loaded = new EconomyProfile(
+                        plugin,
+                        UUID.fromString(set.getString("uuid")),
+                        set.getString("name"),
+                        set.getInt("balance"), true);
+                profiles.add(loaded);
+
+            } else {
+
+                loaded = new EconomyProfile(plugin, UUID.fromString(set.getString("uuid")), set.getString("name"), plugin.getConfigInteger("Options.Default-Balance"), false);
+                profiles.add(loaded);
+
+            }
+
+            statement.close();
+            set.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        EconomyProfile finalLoaded = loaded;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+
+            saveProfile(finalLoaded);
+            profiles.remove(finalLoaded);
+        }, 100);
+
+        return loaded;
     }
 
     public void loadProfile(UUID owner) {
 
         try {
 
-            PreparedStatement statement = plugin.getDatabaseHandler().prepareStatement("SELECT uuid,balance FROM dbank_balances WHERE uuid=?");
-
+            PreparedStatement statement = plugin.getDatabaseHandler().prepareStatement("SELECT uuid,name,balance FROM dbank_balances WHERE uuid=?");
             statement.setString(1, owner.toString());
 
             ResultSet set = statement.executeQuery();
@@ -69,11 +126,12 @@ public class ProfileHandler {
                 profiles.add(new EconomyProfile(
                         plugin,
                         UUID.fromString(set.getString("uuid")),
+                        set.getString("name"),
                         set.getInt("balance"), true));
 
             } else {
 
-                profiles.add(new EconomyProfile(plugin, owner, plugin.getConfigInteger("Options.Default-Balance"), false));
+                profiles.add(new EconomyProfile(plugin, owner, Bukkit.getPlayer(owner).getName(), plugin.getConfigInteger("Options.Default-Balance"), false));
 
             }
 

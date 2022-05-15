@@ -3,9 +3,12 @@ package me.beeland.dunmoore.bank;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 public class EconomyProfile {
@@ -19,7 +22,7 @@ public class EconomyProfile {
 
     private String playerName;
 
-    public EconomyProfile(GoldBank plugin, UUID owner, int balance, boolean aged) {
+    public EconomyProfile(GoldBank plugin, UUID owner, String playerName, int balance, boolean aged) {
 
         this.aged = aged;
         this.plugin = plugin;
@@ -27,7 +30,7 @@ public class EconomyProfile {
         this.owner = owner;
         this.balance = balance;
 
-        this.playerName = getPlayer().getName();
+        this.playerName = playerName;
     }
 
     public UUID getOwner() {
@@ -46,6 +49,10 @@ public class EconomyProfile {
         return balance;
     }
 
+    public void setBalance(int balance) {
+        this.balance = balance;
+    }
+
     public void addBalance(int amount) {
         this.balance += amount;
     }
@@ -60,20 +67,22 @@ public class EconomyProfile {
 
     public void withdraw(int amount) {
 
-        Player player = getPlayer();
-
-        if(amount > balance) {
-            player.sendMessage(plugin.getMessage(""));
-        }
-
         int blocks = (int) Math.floor(amount / 81);
         int ingots = (int) Math.floor(((amount - (blocks * 81)) / 9));
         int nuggets = (int) Math.floor( (amount - ((blocks * 81) + (ingots * 9))));
 
-        player.getInventory().addItem(
-                new ItemStack(Material.GOLD_NUGGET, nuggets),
-                new ItemStack(Material.GOLD_INGOT, ingots),
-                new ItemStack(Material.GOLD_BLOCK, blocks));
+        int blockStacks = (int) Math.floor(blocks / 64);
+        int remainderBlocks = (int) Math.floor(blocks - (blockStacks*64));
+
+        for(int i = 0; i < blockStacks; i++) {
+            giveOrDropItem(player, Arrays.asList(new ItemStack(Material.GOLD_BLOCK, 64)));
+        }
+
+        giveOrDropItem(
+                player,
+                Arrays.asList(new ItemStack(Material.GOLD_NUGGET, nuggets),
+                              new ItemStack(Material.GOLD_INGOT, ingots),
+                              new ItemStack(Material.GOLD_BLOCK, remainderBlocks)));
 
         balance -= amount;
 
@@ -86,6 +95,8 @@ public class EconomyProfile {
     public void deposit(int amount) {
 
         int value = getInventoryValue() - amount;
+
+        if(amount == 0) return;
 
         for(ItemStack item : player.getInventory()) {
 
@@ -100,10 +111,18 @@ public class EconomyProfile {
         int ingots = (int) Math.floor(((value - (blocks * 81)) / 9));
         int nuggets = (int) Math.floor( (value - ((blocks * 81) + (ingots * 9))));
 
-        player.getInventory().addItem(
-                new ItemStack(Material.GOLD_BLOCK, blocks),
-                new ItemStack(Material.GOLD_INGOT, ingots),
-                new ItemStack(Material.GOLD_NUGGET, nuggets));
+        int blockStacks = (int) Math.floor(blocks / 64);
+        int blockRemainder = (int) Math.floor(blocks - (blockStacks * 64));
+
+        for(int i = 0; i < blockStacks; i++) {
+            giveOrDropItem(player, Arrays.asList(new ItemStack(Material.GOLD_BLOCK, 64)));
+        }
+
+        giveOrDropItem(
+                player,
+                Arrays.asList(new ItemStack(Material.GOLD_BLOCK, blockRemainder),
+                              new ItemStack(Material.GOLD_INGOT, ingots),
+                              new ItemStack(Material.GOLD_NUGGET, nuggets)));
 
         balance += amount;
     }
@@ -133,8 +152,6 @@ public class EconomyProfile {
         int itemValue = plugin.getValue(item.getType());
         int inventoryValue = 0;
 
-
-
         for(ItemStack inventoryItem : inventory) {
 
             if(plugin.isValidMaterial(inventoryItem.getType())) {
@@ -147,7 +164,7 @@ public class EconomyProfile {
 
     public int getInventoryValue() {
 
-        PlayerInventory inventory = player.getInventory();
+        Inventory inventory = player.getInventory();
         int calculatedValue = 0;
 
         for(ItemStack item : inventory) {
@@ -161,6 +178,27 @@ public class EconomyProfile {
             }
         }
         return calculatedValue;
+    }
+
+    private void giveOrDropItem(Player player, List<ItemStack> items) {
+
+        for(ItemStack item : items) {
+
+            if(item == null || item.getType() == Material.AIR) return;
+            if(item.getAmount() == 0) return;
+
+            if(player.getInventory().firstEmpty() != -1) {
+
+                player.getInventory().addItem(item);
+
+            } else {
+
+                player.getLocation().getWorld().dropItemNaturally(player.getLocation(), item);
+
+            }
+
+        }
+
     }
 
 }

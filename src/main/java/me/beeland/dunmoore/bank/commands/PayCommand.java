@@ -54,6 +54,11 @@ public class PayCommand implements CommandExecutor {
         EconomyProfile targetProfile = profileHandler.getByPlayer(target);
         int paymentAmount = Integer.parseInt(args[1]);
 
+        if(playerProfile.getBalance() < paymentAmount) {
+            sender.sendMessage(plugin.getMessage("Lang.Insufficient-Funds"));
+            return true;
+        }
+
         playerProfile.payPlayer(targetProfile, paymentAmount);
 
         player.sendMessage(plugin.getMessage("Lang.Pay-Success")

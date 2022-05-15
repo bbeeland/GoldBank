@@ -2,20 +2,22 @@ package me.beeland.dunmoore.bank;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import me.beeland.dunmoore.bank.commands.BalanceCommand;
-import me.beeland.dunmoore.bank.commands.DepositCommand;
-import me.beeland.dunmoore.bank.commands.PayCommand;
-import me.beeland.dunmoore.bank.commands.WithdrawCommand;
+import me.beeland.dunmoore.bank.commands.*;
+import me.beeland.dunmoore.bank.handler.BankNoteHandler;
 import me.beeland.dunmoore.bank.handler.DatabaseHandler;
 import me.beeland.dunmoore.bank.handler.ProfileHandler;
+import me.beeland.dunmoore.bank.handler.VaultHandler;
+import me.beeland.dunmoore.bank.listener.PlayerInteractListener;
 import me.beeland.dunmoore.bank.listener.PlayerJoinListener;
 import me.beeland.dunmoore.bank.listener.PlayerQuitListener;
-import me.beeland.dunmoore.bank.placeholder.BalanceExpansion;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.md_5.bungee.api.ChatColor;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.PreparedStatement;
@@ -30,6 +32,7 @@ public class GoldBank extends JavaPlugin {
     private PluginConfiguration config;
     private DatabaseHandler databaseHandler;
     private ProfileHandler profileHandler;
+    private BankNoteHandler bankNoteHandler;
 
     private HashMap<Material, Integer> values;
 
@@ -48,10 +51,12 @@ public class GoldBank extends JavaPlugin {
                 getConfigValue("Database.Password"));
 
         this.profileHandler = new ProfileHandler(this);
+        this.bankNoteHandler = new BankNoteHandler(this);
         this.values = Maps.newHashMap();
 
         try {
 
+            getLogger().info("Initializing database..");
             PreparedStatement statement = databaseHandler.prepareStatement("CREATE TABLE IF NOT EXISTS dbank_balances(`uuid` VARCHAR(36) PRIMARY KEY NOT NULL, `name` VARCHAR(32) NOT NULL, `balance` INTEGER NOT NULL DEFAULT 0);");
             statement.execute();
             statement.close();
@@ -62,23 +67,27 @@ public class GoldBank extends JavaPlugin {
 
         this.papiEnabled = getConfigOption("Options.Enable-PlaceholderAPI") && (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null);
         this.rgbEnabled = getConfigOption("Options.Enable-RGB");
-        this.hexPattern = Pattern.compile("#([A-Fa-f0-9]){6}>");
-
-        if(papiEnabled) {
-            new BalanceExpansion(profileHandler).register();
-
-        }
+        this.hexPattern = Pattern.compile("&#([A-Fa-f0-9]){6}>");
 
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new PlayerJoinListener(this), this);
         pluginManager.registerEvents(new PlayerQuitListener(this), this);
+        pluginManager.registerEvents(new PlayerInteractListener(this), this);
 
         getCommand("balance").setExecutor(new BalanceCommand(this));
         getCommand("withdraw").setExecutor(new WithdrawCommand(this));
         getCommand("deposit").setExecutor(new DepositCommand(this));
         getCommand("pay").setExecutor(new PayCommand(this));
+        getCommand("dunmoorebankadmin").setExecutor(new BankAdminCommand(this));
+        getCommand("balancetop").setExecutor(new BalanceTopCommand(this));
+        getCommand("banknote").setExecutor(new BanknoteCommand(this));
 
         profileHandler.init();
+
+        if(pluginManager.isPluginEnabled("Vault")) {
+            getLogger().info(withColor("&7&lRegistering plugin with vault.."));
+            Bukkit.getServer().getServicesManager().register(Economy.class, new VaultHandler(this), this, ServicePriority.Highest);
+        }
 
         values.put(Material.GOLD_NUGGET, 1);
         values.put(Material.GOLD_INGOT, 9);
@@ -89,17 +98,20 @@ public class GoldBank extends JavaPlugin {
     public void onDisable() {
 
         getProfileHandler().save();
+        this.databaseHandler.getDataSource().close();
 
-        try {
-            this.databaseHandler.getConnection().close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    }
 
+    public PluginConfiguration getConfiguration() {
+        return config;
     }
 
     public ProfileHandler getProfileHandler() {
         return profileHandler;
+    }
+
+    public BankNoteHandler getBankNoteHandler() {
+        return bankNoteHandler;
     }
 
     public DatabaseHandler getDatabaseHandler() {
@@ -114,7 +126,7 @@ public class GoldBank extends JavaPlugin {
 
             while(matcher.find()) {
 
-                ChatColor hexColor = ChatColor.of(matcher.group().substring(1, matcher.group().length()));
+                ChatColor hexColor = ChatColor.of(matcher.group().substring(1));
                 String before = message.substring(0, matcher.start());
                 String after = message.substring(matcher.end());
 
@@ -137,7 +149,7 @@ public class GoldBank extends JavaPlugin {
 
         List<String> coloredList = Lists.newArrayList();
         list.forEach(line -> coloredList.add(withColor(line)));
-        return list;
+        return coloredList;
     }
 
     public String getConfigValue(String path) {

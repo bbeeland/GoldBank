@@ -1,12 +1,34 @@
-name: GoldBank
+name: DunmooreBank
 main: me.beeland.dunmoore.bank.GoldBank
 version: 1.0.0
 api-version: 1.13
+author: Britton B
 
 commands:
   balance:
+    description: "Check your balance, or that of another player"
+    usage: /<command>
     aliases:
       - bal
   withdraw:
+    description: "Withdraw money from your bank in the form of gold."
+    usage: /<command>
   deposit:
+    description: "Deposit your gold into your bank"
+    usage: /<command>
   pay:
+    description: "Pay another player some money from your bank account!"
+    usage: /<command>
+  dunmoorebankadmin:
+    description: "Admin command for the plugin"
+    usage: /<command>
+    aliases:
+      - dba
+  balancetop:
+    description: "See who has the highest balances on the server!"
+    usage: /<command>
+    aliases:
+      - baltop
+  banknote:
+    description: "Create banknotes!"
+    usage: /<command>

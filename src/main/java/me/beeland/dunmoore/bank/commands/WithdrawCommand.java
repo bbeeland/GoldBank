@@ -6,9 +6,13 @@ import me.beeland.dunmoore.bank.handler.ProfileHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-public class WithdrawCommand implements CommandExecutor {
+import java.util.Arrays;
+import java.util.List;
+
+public class WithdrawCommand implements CommandExecutor, TabCompleter {
 
     private GoldBank plugin;
     private ProfileHandler profileHandler;
@@ -33,7 +37,6 @@ public class WithdrawCommand implements CommandExecutor {
             return true;
         }
 
-        // MUST PROVIDE VALID AMOUNT
         if(args.length == 0) {
             sender.sendMessage(plugin.getMessage("Lang.Invalid-Amount"));
             return true;
@@ -41,14 +44,13 @@ public class WithdrawCommand implements CommandExecutor {
 
         if(args.length == 1) {
 
-            if(args[0].equalsIgnoreCase("all")) {
+            if(!args[0].equalsIgnoreCase("all")) {
 
                 try {
                     Integer.parseInt(args[0]);
                 } catch (NumberFormatException e) {
                     sender.sendMessage(plugin.getMessage("Lang.Invalid-Amount"));
                 }
-
             }
 
             EconomyProfile profile = plugin.getProfileHandler().getByPlayer(player);
@@ -68,5 +70,15 @@ public class WithdrawCommand implements CommandExecutor {
         }
 
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+
+        if(args.length == 1) {
+            return Arrays.asList("all");
+        }
+
+        return null;
     }
 }
